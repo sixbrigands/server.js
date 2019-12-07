@@ -6,14 +6,21 @@ const mysql = require('mysql');
 const localtunnel = require('localtunnel');
 
 app.use(bodyParser.urlencoded({ extended: false })); 
+app.use(session({
+  secret: '******',
+  resave: false,
+  saveUninitialized: true,
+}))
+app.use(bodyParser.urlencoded({extended : true}));
+app.use(bodyParser.json());
 
 //run this command in cloud shell to start proxy from mysql:
 //./cloud_sql_proxy -instances=umass-class:us-central1:umassclass=tcp:3306
 var con = mysql.createConnection({ //create 'con' a connection with mysql
   host: "localhost",
   user: "root",
-  password: "*****",
-  database: "******"
+  password: "******",
+  database: "****"
 });
 
 con.connect(function(err) {     //connect to mysql with 'con'
@@ -45,32 +52,64 @@ app.post('/addAccount', (req, res) => {
   con.query(sql, [firstName, lastName, email, password], function (err, result) {
     if (err) throw err;
     console.log("1 record inserted");
-    res.send("Thanks for registering!")
     return res.redirect('http://umassclass.com'); //redirect to new page after done postingt to mysql
     
   });
 });
 
 
+var greetingName = -1;
+
 app.post('/login', function(req, res) {
   var email = req.body.email;
   var password = req.body.password;
-  if (username && password) {
-    connection.query('SELECT * FROM accounts WHERE username = ? AND password = ?', [username, password], function(error, results, fields) {
-      if (results.length > 0) {
-        req.session.loggedin = true;
-        req.session.username = username;
+  console.log('here is your email and pass ' + email + ' ' + password);
+  if (email && password) {
+    con.query('SELECT * FROM users WHERE email = ? AND password = ?', [email, password], function(error, result, fields) {
+      if (result.length > 0) {
+        greetingName = result[0].firstName;
+        req.session.loggedin = true; //now user is logged in
+        req.session.username = email;
         res.redirect('/home');
       } else {
-        res.send('Incorrect Username and/or Password!');
+        res.send('Incorrect Email and/or Password!');
       }     
       res.end();
     });
   } else {
-    res.send('Please enter Username and Password!');
+    res.send('Please enter email and Password!');
     res.end();
   }
 });
+
+app.get('/home', function(req, res) {
+  if (req.session.loggedin) { //how to check if user is logged in
+    console.log('Welcome back, ' + greetingName + '!');
+    return res.redirect('http://umassclass.com');
+  } else {
+    console.log('Please login to view this page!');
+    return res.redirect('http://umassclass.com');
+  }
+  res.end();
+});
+
+app.post('/leaveReview', function(req, res) {
+  var comment = req.body.comment;
+  var sql = "INSERT INTO reviews (review) VALUES (?)"; //this is the command that is run in mysql
+  con.query(sql, [comment], function (err, result) {
+    if (err) throw err;
+    console.log("Review left");
+    return res.redirect('/displayReviews'); //redirect to new page after done postingt to mysql
+    
+  });
+});
+
+app.get('/displayReviews', function(req, res) {
+  con.query('SELECT * FROM reviews', function(error, result, fields) {
+  res.send(result)
+  });
+});
+
 
 
   const server = app.listen(8080, () => {
