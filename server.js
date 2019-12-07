@@ -7,7 +7,7 @@ const localtunnel = require('localtunnel');
 
 app.use(bodyParser.urlencoded({ extended: false })); 
 app.use(session({
-  secret: '******',
+  secret: '********',
   resave: false,
   saveUninitialized: true,
 }))
@@ -20,7 +20,7 @@ var con = mysql.createConnection({ //create 'con' a connection with mysql
   host: "localhost",
   user: "root",
   password: "******",
-  database: "****"
+  database: "*******"
 });
 
 con.connect(function(err) {     //connect to mysql with 'con'
@@ -94,14 +94,18 @@ app.get('/home', function(req, res) {
 });
 
 app.post('/leaveReview', function(req, res) {
-  var comment = req.body.comment;
-  var sql = "INSERT INTO reviews (review) VALUES (?)"; //this is the command that is run in mysql
-  con.query(sql, [comment], function (err, result) {
-    if (err) throw err;
-    console.log("Review left");
-    return res.redirect('/displayReviews'); //redirect to new page after done postingt to mysql
-    
-  });
+  if (req.session.loggedin) { 
+    var comment = req.body.comment;
+    var sql = "INSERT INTO reviews (review) VALUES (?)"; //this is the command that is run in mysql
+    con.query(sql, [comment], function (err, result) {
+      if (err) throw err;
+      console.log("Review left");
+      return res.redirect('/displayReviews'); //redirect to new page after done postingt to mysql
+    });
+  }  
+  else{
+    res.redirect('http://umassclass.com/login.html')
+  }
 });
 
 app.get('/displayReviews', function(req, res) {
