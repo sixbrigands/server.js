@@ -4,10 +4,11 @@ const bodyParser = require('body-parser');
 const app = express();
 const mysql = require('mysql');
 const localtunnel = require('localtunnel');
+const http = require('http');
 
 app.use(bodyParser.urlencoded({ extended: false })); 
 app.use(session({
-  secret: '********',
+  secret: '******',
   resave: false,
   saveUninitialized: true,
 }))
@@ -20,7 +21,7 @@ var con = mysql.createConnection({ //create 'con' a connection with mysql
   host: "localhost",
   user: "root",
   password: "******",
-  database: "*******"
+  database: "********"
 });
 
 con.connect(function(err) {     //connect to mysql with 'con'
@@ -40,6 +41,7 @@ con.connect(function(err) {     //connect to mysql with 'con'
     console.log('localtunnel closed!')
   });
 })();
+
 
 
 app.post('/addAccount', (req, res) => {
@@ -108,15 +110,41 @@ app.post('/leaveReview', function(req, res) {
   }
 });
 
+//html string that will be send to browser
+var reo ='<html><head><title>Class Reviews</title></head><body><h1>Class Reviews</h1>{${table}}</body></html>';
+
+//sets and returns html table with results from sql select
+//Receives sql query and callback function to return the table
+function setResHtml(sql, cb){
+    con.query(sql, (err, res, cols)=>{
+      if(err) throw err;
+
+      var table =''; //to store html table
+
+      //create html table with data from res.
+      for(var i=0; i<res.length; i++){
+        table +='<tr><td>'+ (i+1) +'</td><td>'+ res[i].review +'</td></tr>';
+      }
+      table ='<table border="1"><tr><th>Nr.</th><th>Review</th></tr>'+ table +'</table>';
+      
+      return cb(table);
+    });
+}
+
+let reviewSql ='SELECT * FROM reviews';
+
 app.get('/displayReviews', function(req, res) {
-  con.query('SELECT * FROM reviews', function(error, result, fields) {
-  res.send(result)
-  });
+  setResHtml(reviewSql, resql=>{
+    reo = reo.replace('{${table}}', resql);
+    res.writeHead(200, {'Content-Type':'text/html; charset=utf-8'});
+    res.write(reo, 'utf-8');
+    res.end();
+  }); 
 });
 
 
 
-  const server = app.listen(8080, () => {
+const server = app.listen(8080, () => {
   const host = server.address().address;
   const port = server.address().port;
 
