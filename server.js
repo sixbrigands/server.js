@@ -8,7 +8,7 @@ const http = require('http');
 
 app.use(bodyParser.urlencoded({ extended: false })); 
 app.use(session({
-  secret: '******',
+  secret: 'dylan secret',
   resave: false,
   saveUninitialized: true,
 }))
@@ -20,8 +20,8 @@ app.use(bodyParser.json());
 var con = mysql.createConnection({ //create 'con' a connection with mysql
   host: "localhost",
   user: "root",
-  password: "******",
-  database: "********"
+  password: "calcom3k",
+  database: "userdb"
 });
 
 con.connect(function(err) {     //connect to mysql with 'con'
@@ -95,27 +95,48 @@ app.get('/home', function(req, res) {
   res.end();
 });
 
+
 app.post('/leaveReview', function(req, res) {
-  if (req.session.loggedin) { 
-    var comment = req.body.comment;
-    var sql = "INSERT INTO reviews (review) VALUES (?)"; //this is the command that is run in mysql
-    con.query(sql, [comment], function (err, result) {
+  //if (req.session.loggedin) {
+      console.log('start___________________________________________'); 
+  if (true) { 
+    classNumber = req.body.classNumber;
+    var review = req.body.review;
+    classNumber = classNumber.replace(/'/g, ' '); //replaces all apostrophies with a space (the g makes it apply to all instances in string)
+    var sql = "CREATE TABLE IF NOT EXISTS " + classNumber + "(id INT AUTO_INCREMENT, review VARCHAR(255), PRIMARY KEY(id))"; //if the class review page does not exist, create it.
+    con.query(sql, [classNumber], function (err, result) {
+      if (err) throw err;
+    });
+
+    var sql = "INSERT INTO " + classNumber + " (review)  VALUES (?)"; //this is the command that is run in mysql
+    con.query(sql, [review], function (err, result) {
       if (err) throw err;
       console.log("Review left");
-      return res.redirect('/displayReviews'); //redirect to new page after done postingt to mysql
     });
-  }  
-  else{
-    res.redirect('http://umassclass.com/login.html')
+
+    var reviewSql = 'SELECT * FROM ' + classNumber;
+    buildHTML(reviewSql, resql=>{
+      //html string that will be send to browser
+      var reo = '<html><head><title>{${classNumber1}} Reviews</title></head><body><h1>{${classNumber2}} Reviews</h1>{${table}}</body></html>';
+      reo = reo.replace('{${table}}', resql);
+      reo = reo.replace('{${classNumber1}}', classNumber);
+      reo = reo.replace('{${classNumber2}}', classNumber);
+      res.writeHead(200, {'Content-Type':'text/html; charset=utf-8'});
+      res.write(reo, 'utf-8');
+      res.end();
+    });
   }
+  else{
+      res.redirect('http://umassclass.com/login.html')
+  }
+
 });
 
-//html string that will be send to browser
-var reo ='<html><head><title>Class Reviews</title></head><body><h1>Class Reviews</h1>{${table}}</body></html>';
+
 
 //sets and returns html table with results from sql select
 //Receives sql query and callback function to return the table
-function setResHtml(sql, cb){
+function buildHTML(sql, cb){
     con.query(sql, (err, res, cols)=>{
       if(err) throw err;
 
@@ -123,6 +144,7 @@ function setResHtml(sql, cb){
 
       //create html table with data from res.
       for(var i=0; i<res.length; i++){
+        console.log(res[i].review);
         table +='<tr><td>'+ (i+1) +'</td><td>'+ res[i].review +'</td></tr>';
       }
       table ='<table border="1"><tr><th>Nr.</th><th>Review</th></tr>'+ table +'</table>';
@@ -130,19 +152,6 @@ function setResHtml(sql, cb){
       return cb(table);
     });
 }
-
-let reviewSql ='SELECT * FROM reviews';
-
-app.get('/displayReviews', function(req, res) {
-  setResHtml(reviewSql, resql=>{
-    reo = reo.replace('{${table}}', resql);
-    res.writeHead(200, {'Content-Type':'text/html; charset=utf-8'});
-    res.write(reo, 'utf-8');
-    res.end();
-  }); 
-});
-
-
 
 const server = app.listen(8080, () => {
   const host = server.address().address;
