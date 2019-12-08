@@ -19,9 +19,9 @@ app.use(bodyParser.json());
 //./cloud_sql_proxy -instances=umass-class:us-central1:umassclass=tcp:3306
 var con = mysql.createConnection({ //create 'con' a connection with mysql
   host: "localhost",
-  user: "***********",
-  password: "***********",
-  database: "*************"
+  user: "root",
+  password: "******************",
+  database: "**********"
 });
 
 con.connect(function(err) {     //connect to mysql with 'con'
@@ -107,22 +107,22 @@ app.post('/search', function(req, res) {
     res.redirect('http://umassclass.com/CS325.html');
     break;
     case 'GE0370':
-    res.redirect('http://umassclass.com/geo370.html');
+    res.redirect('http://umassclass.com/GEO370.html');
     break;
     case 'geo370':
-    res.redirect('http://umassclass.com/geo370.html');
+    res.redirect('http://umassclass.com/GEO370.html');
     break;
     case 'ENGLISH115':
-    res.redirect('http://umassclass.com/English115.html');
+    res.redirect('http://umassclass.com/ENGLISH115.html');
     break;
     case 'ENG115':
-    res.redirect('http://umassclass.com/English115.html');
+    res.redirect('http://umassclass.com/ENGLISH115.html');
     break;
     case 'english115':
-    res.redirect('http://umassclass.com/English115.html');
+    res.redirect('http://umassclass.com/ENGLISH115.html');
     break;
     case 'eng115':
-    res.redirect('http://umassclass.com/English115.html');
+    res.redirect('http://umassclass.com/ENGLISH115.html');
     break;
   default:
     res.send('I could not find that class! Please try again with another class number.')
@@ -131,9 +131,9 @@ app.post('/search', function(req, res) {
 });
 
 app.post('/leaveReview', function(req, res) {
-  //if (req.session.loggedin) {
+  if (req.session.loggedin) {
       console.log('start___________________________________________'); 
-  if (true) { 
+  //if (true) { 
     var classNumber = req.body.classNumber;
     var review = req.body.review;
     classNumber = classNumber.replace(/'/g, ' '); //replaces all apostrophies with a space (the g makes it apply to all instances in string)
