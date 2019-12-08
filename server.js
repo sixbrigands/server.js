@@ -8,7 +8,7 @@ const http = require('http');
 
 app.use(bodyParser.urlencoded({ extended: false })); 
 app.use(session({
-  secret: '*****',
+  secret: '*********',
   resave: false,
   saveUninitialized: true,
 }))
@@ -19,9 +19,9 @@ app.use(bodyParser.json());
 //./cloud_sql_proxy -instances=umass-class:us-central1:umassclass=tcp:3306
 var con = mysql.createConnection({ //create 'con' a connection with mysql
   host: "localhost",
-  user: "root",
-  password: "*******",
-  database: "*******"
+  user: "***********",
+  password: "***********",
+  database: "*************"
 });
 
 con.connect(function(err) {     //connect to mysql with 'con'
@@ -96,11 +96,45 @@ app.get('/home', function(req, res) {
 });
 
 
+app.post('/search', function(req, res) {
+  var classNumber = req.body.classNumber;
+  console.log(classNumber + '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+  switch(classNumber) {
+  case 'CS325':
+    res.redirect('http://umassclass.com/CS325.html');
+    break;
+  case 'cs325':
+    res.redirect('http://umassclass.com/CS325.html');
+    break;
+    case 'GE0370':
+    res.redirect('http://umassclass.com/geo370.html');
+    break;
+    case 'geo370':
+    res.redirect('http://umassclass.com/geo370.html');
+    break;
+    case 'ENGLISH115':
+    res.redirect('http://umassclass.com/English115.html');
+    break;
+    case 'ENG115':
+    res.redirect('http://umassclass.com/English115.html');
+    break;
+    case 'english115':
+    res.redirect('http://umassclass.com/English115.html');
+    break;
+    case 'eng115':
+    res.redirect('http://umassclass.com/English115.html');
+    break;
+  default:
+    res.send('I could not find that class! Please try again with another class number.')
+}
+
+});
+
 app.post('/leaveReview', function(req, res) {
   //if (req.session.loggedin) {
       console.log('start___________________________________________'); 
   if (true) { 
-    classNumber = req.body.classNumber;
+    var classNumber = req.body.classNumber;
     var review = req.body.review;
     classNumber = classNumber.replace(/'/g, ' '); //replaces all apostrophies with a space (the g makes it apply to all instances in string)
     var sql = "CREATE TABLE IF NOT EXISTS " + classNumber + "(id INT AUTO_INCREMENT, review VARCHAR(255), PRIMARY KEY(id))"; //if the class review page does not exist, create it.
@@ -132,6 +166,18 @@ app.post('/leaveReview', function(req, res) {
 
 });
 
+app.all('/displayReviews', function(req, res) {
+  var classNumber = req.body.classNumber; //must have something in body with name='classNumber'
+  var reviewSql = 'SELECT * FROM ' + classNumber;
+      buildHTML(reviewSql, resql=>{
+      reo = reo.replace('{${table}}', resql);
+      reo = reo.replace('{${classNumber1}}', classNumber);
+      reo = reo.replace('{${classNumber2}}', classNumber);
+      res.writeHead(200, {'Content-Type':'text/html; charset=utf-8'});
+      res.write(reo, 'utf-8');
+      res.end();
+    });  
+});
 
 
 //sets and returns html table with results from sql select
