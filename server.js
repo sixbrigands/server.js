@@ -8,7 +8,7 @@ const http = require('http');
 
 app.use(bodyParser.urlencoded({ extended: false })); 
 app.use(session({
-  secret: 'dylan secret',
+  secret: '*****',
   resave: false,
   saveUninitialized: true,
 }))
@@ -20,8 +20,8 @@ app.use(bodyParser.json());
 var con = mysql.createConnection({ //create 'con' a connection with mysql
   host: "localhost",
   user: "root",
-  password: "calcom3k",
-  database: "userdb"
+  password: "*******",
+  database: "*******"
 });
 
 con.connect(function(err) {     //connect to mysql with 'con'
