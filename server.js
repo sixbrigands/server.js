@@ -96,20 +96,23 @@ app.get('/home', function(req, res) {
 });
 
 
+//search feature, it's just a big ol' switch statement.  You now know too much.
 app.post('/search', function(req, res) {
   var classNumber = req.body.classNumber;
+  classNumber = classNumber.replace(/\s/g, ''); //remove spaces
+  var classNumber = classNumber.toUpperCase(); //captialize
   console.log(classNumber + '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
   switch(classNumber) {
   case 'CS325':
     res.redirect('http://umassclass.com/CS325.html');
     break;
-  case 'cs325':
+  case '325':
     res.redirect('http://umassclass.com/CS325.html');
     break;
     case 'GE0370':
     res.redirect('http://umassclass.com/GEO370.html');
     break;
-    case 'geo370':
+    case '370':
     res.redirect('http://umassclass.com/GEO370.html');
     break;
     case 'ENGLISH115':
@@ -118,15 +121,12 @@ app.post('/search', function(req, res) {
     case 'ENG115':
     res.redirect('http://umassclass.com/ENGLISH115.html');
     break;
-    case 'english115':
-    res.redirect('http://umassclass.com/ENGLISH115.html');
-    break;
-    case 'eng115':
+    case '115':
     res.redirect('http://umassclass.com/ENGLISH115.html');
     break;
   default:
     res.send('I could not find that class! Please try again with another class number.')
-}
+  }
 
 });
 
