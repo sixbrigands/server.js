@@ -8,7 +8,7 @@ const http = require('http');
 
 app.use(bodyParser.urlencoded({ extended: false })); 
 app.use(session({
-  secret: '*********',
+  secret: '********',
   resave: false,
   saveUninitialized: true,
 }))
@@ -20,8 +20,8 @@ app.use(bodyParser.json());
 var con = mysql.createConnection({ //create 'con' a connection with mysql
   host: "localhost",
   user: "root",
-  password: "******************",
-  database: "**********"
+  password: "*******",
+  database: "*****"
 });
 
 con.connect(function(err) {     //connect to mysql with 'con'
@@ -84,10 +84,10 @@ app.post('/login', function(req, res) {
   }
 });
 
-app.get('/home', function(req, res) {
+app.all('/home', function(req, res) {
   if (req.session.loggedin) { //how to check if user is logged in
     console.log('Welcome back, ' + greetingName + '!');
-    return res.redirect('http://umassclass.com');
+    return res.redirect('http://www.umassclass.com/index2.html');
   } else {
     console.log('Please login to view this page!');
     return res.redirect('http://umassclass.com');
@@ -95,12 +95,11 @@ app.get('/home', function(req, res) {
   res.end();
 });
 
-
 //search feature, it's just a big ol' switch statement.  You now know too much.
 app.post('/search', function(req, res) {
   var classNumber = req.body.classNumber;
   classNumber = classNumber.replace(/\s/g, ''); //remove spaces
-  var classNumber = classNumber.toUpperCase(); //captialize
+  classNumber = classNumber.toUpperCase(); //captialize
   console.log(classNumber + '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
   switch(classNumber) {
   case 'CS325':
@@ -109,7 +108,7 @@ app.post('/search', function(req, res) {
   case '325':
     res.redirect('http://umassclass.com/CS325.html');
     break;
-    case 'GE0370':
+    case 'GEO370':
     res.redirect('http://umassclass.com/GEO370.html');
     break;
     case '370':
@@ -126,7 +125,7 @@ app.post('/search', function(req, res) {
     break;
   default:
     res.send('I could not find that class! Please try again with another class number.')
-  }
+}
 
 });
 
@@ -135,8 +134,10 @@ app.post('/leaveReview', function(req, res) {
       console.log('start___________________________________________'); 
   //if (true) { 
     var classNumber = req.body.classNumber;
+    classNumber = classNumber.replace(/\s/g, ''); //remove spaces //these two lines help sanatize the input
+    classNumber = classNumber.toUpperCase(); //captialize
     var review = req.body.review;
-    classNumber = classNumber.replace(/'/g, ' '); //replaces all apostrophies with a space (the g makes it apply to all instances in string)
+    classNumber = classNumber.replace(/'/g, ''); //removes all apostrophies (the g makes it apply to all instances in string)
     var sql = "CREATE TABLE IF NOT EXISTS " + classNumber + "(id INT AUTO_INCREMENT, review VARCHAR(255), PRIMARY KEY(id))"; //if the class review page does not exist, create it.
     con.query(sql, [classNumber], function (err, result) {
       if (err) throw err;
